@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat Widget Example</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100">
+    <div class="container mx-auto px-4 py-8">
+        <div class="bg-white rounded-lg shadow-lg p-6">
+            <h1 class="text-2xl font-bold mb-4">Chat Widget Example</h1>
+            <p class="text-gray-600 mb-6">This is an example page showing how to integrate the chat widget into any website.</p>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="bg-gray-50 p-4 rounded-lg">
+                    <h2 class="text-lg font-semibold mb-2">Features:</h2>
+                    <ul class="list-disc list-inside text-gray-600">
+                        <li>Real-time messaging</li>
+                        <li>File uploads</li>
+                        <li>Voice messages</li>
+                        <li>Message history</li>
+                        <li>Multiple chat rooms</li>
+                    </ul>
+                </div>
+                
+                <div class="bg-gray-50 p-4 rounded-lg">
+                    <h2 class="text-lg font-semibold mb-2">Test Different Rooms:</h2>
+                    <div class="flex gap-2">
+                        <button onclick="changeRoom('room1')" class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
+                            Room 1
+                        </button>
+                        <button onclick="changeRoom('room2')" class="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600">
+                            Room 2
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Include the chat widget script -->
+    <script src="/js/chat-widget.js"></script>
+    
+    <!-- Initialize the chat widget -->
+    <script>
+        let currentChat = null;
+
+        // Initialize the chat widget with options
+        function initChat(roomId = 'room1') {
+            if (currentChat) {
+                // Remove previous chat instance
+                document.querySelector('.chat-widget-container').remove();
+            }
+
+            currentChat = new ChatWidget({
+                websocketUrl: 'ws://' + window.location.host,
+                apiUrl: window.location.origin,
+                position: 'bottom-right',
+                theme: 'light',
+                userId: 'user_' + Math.random().toString(36).substr(2, 9), // Generate random user ID
+                roomId: roomId
+            });
+        }
+
+        function changeRoom(roomId) {
+            initChat(roomId);
+        }
+
+        // Initialize default chat
+        initChat();
+    </script>
+</body>
+</html> 

@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat Admin Panel</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-100">
+    <div class="container mx-auto px-4 py-8">
+        <div class="grid grid-cols-12 gap-6">
+            <!-- Clients List -->
+            <div class="col-span-4 bg-white rounded-lg shadow-lg p-4">
+                <h2 class="text-xl font-bold mb-4">Active Clients</h2>
+                <div id="clients-list" class="space-y-2">
+                    <!-- Clients will be listed here -->
+                </div>
+            </div>
+
+            <!-- Chat Area -->
+            <div class="col-span-8 bg-white rounded-lg shadow-lg flex flex-col h-[80vh]">
+                <div class="p-4 border-b">
+                    <h2 class="text-xl font-bold" id="current-client">Select a client</h2>
+                </div>
+                
+                <div id="messages-container" class="flex-1 p-4 overflow-y-auto">
+                    <!-- Messages will appear here -->
+                </div>
+
+                <div class="border-t p-4">
+                    <div class="flex items-center gap-2">
+                        <button class="p-2 text-gray-500 hover:text-gray-700" id="file-upload-btn">
+                            <i class="fas fa-paperclip"></i>
+                            <input type="file" id="file-input" class="hidden" multiple>
+                        </button>
+                        <input type="text" id="message-input" 
+                               class="flex-1 border rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                               placeholder="Type your message...">
+                        <button id="send-btn" class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600">
+                            Send
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentClientId = null;
+        let ws = null;
+        const adminId = 'admin_' + Math.random().toString(36).substr(2, 9);
+
+        // Initialize WebSocket connection
+        function initWebSocket() {
+            ws = new WebSocket(`ws://${window.location.host}?userId=${adminId}&isAdmin=true`);
+            
+            ws.onmessage = (event) => {
+                const data = JSON.parse(event.data);
+                if (data.type === 'new_message') {
+                    addMessage(data.message);
+                    updateClientsList(); // Refresh clients list to show latest message
+                }
+            };
+
+            ws.onclose = () => {
+                setTimeout(initWebSocket, 1000); // Reconnect on close
+            };
+        }
+
+        // Load active clients
+        async function updateClientsList() {
+            try {
+                const response = await fetch('/api/clients');
+                const clients = await response.json();
+                
+                const clientsList = document.getElementById('clients-list');
+                clientsList.innerHTML = clients.map(client => `
+                    <div class="p-3 bg-gray-50 rounded cursor-pointer hover:bg-gray-100 ${currentClientId === client.userId ? 'bg-blue-50' : ''}"
+                         onclick="selectClient('${client.userId}')">
+                        <div class="font-semibold">Client: ${client.userId}</div>
+                        ${client.lastMessage ? `
+                            <div class="text-sm text-gray-500 truncate">
+                                ${client.lastMessage.content}
+                            </div>
+                        ` : ''}
+                    </div>
+                `).join('');
+            } catch (error) {
+                console.error('Error loading clients:', error);
+            }
+        }
+
+        // Load messages for selected client
+        async function loadMessages(clientId) {
+            try {
+                const response = await fetch(`/api/messages/${clientId}`);
+                const messages = await response.json();
+                
+                const messagesContainer = document.getElementById('messages-container');
+                messagesContainer.innerHTML = '';
+                messages.forEach(message => addMessage(message));
+            } catch (error) {
+                console.error('Error loading messages:', error);
+            }
+        }
+
+        // Select client to chat with
+        function selectClient(clientId) {
+            currentClientId = clientId;
+            document.getElementById('current-client').textContent = `Chat with Client: ${clientId}`;
+            loadMessages(clientId);
+            updateClientsList(); // Update selection highlight
+        }
+
+        // Add message to chat
+        function addMessage(message) {
+            if (!currentClientId || (message.userId !== currentClientId && message.userId !== adminId)) {
+                return;
+            }
+
+            const messagesContainer = document.getElementById('messages-container');
+            const messageElement = document.createElement('div');
+            messageElement.className = `flex ${message.isAdmin ? 'justify-end' : 'justify-start'} mb-4`;
+            
+            let content = message.content;
+            if (message.files && message.files.length > 0) {
+                message.files.forEach(file => {
+                    if (file.type.startsWith('audio/')) {
+                        content += `
+                            <div class="mt-2">
+                                <audio controls src="${file.url}"></audio>
+                            </div>
+                        `;
+                    } else {
+                        content += `
+                            <div class="mt-2">
+                                <a href="${file.url}" target="_blank" class="text-blue-500 hover:underline">
+                                    <i class="fas fa-file"></i> ${file.name}
+                                </a>
+                            </div>
+                        `;
+                    }
+                });
+            }
+
+            messageElement.innerHTML = `
+                <div class="max-w-[70%] ${message.isAdmin ? 'bg-blue-500 text-white' : 'bg-gray-200'} rounded-lg p-3">
+                    ${content}
+                    <div class="text-xs ${message.isAdmin ? 'text-blue-100' : 'text-gray-500'} mt-1">
+                        ${new Date(message.timestamp).toLocaleTimeString()}
+                    </div>
+                </div>
+            `;
+
+            messagesContainer.appendChild(messageElement);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+
+        // Send message
+        async function sendMessage() {
+            if (!currentClientId) {
+                alert('Please select a client first');
+                return;
+            }
+
+            const input = document.getElementById('message-input');
+            const text = input.value.trim();
+            const fileInput = document.getElementById('file-input');
+            
+            if (!text && fileInput.files.length === 0) return;
+
+            try {
+                let uploadedFiles = [];
+                if (fileInput.files.length > 0) {
+                    const formData = new FormData();
+                    Array.from(fileInput.files).forEach(file => {
+                        formData.append('files', file);
+                    });
+
+                    const uploadResponse = await fetch('/api/upload', {
+                        method: 'POST',
+                        body: formData
+                    });
+                    uploadedFiles = await uploadResponse.json();
+                }
+
+                const response = await fetch('/api/messages', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        userId: currentClientId,
+                        content: text,
+                        type: 'text',
+                        files: uploadedFiles,
+                        isAdmin: true
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to send message');
+                }
+
+                input.value = '';
+                fileInput.value = '';
+            } catch (error) {
+                console.error('Error sending message:', error);
+                alert('Failed to send message');
+            }
+        }
+
+        // Event listeners
+        document.getElementById('send-btn').addEventListener('click', sendMessage);
+        document.getElementById('message-input').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') sendMessage();
+        });
+        document.getElementById('file-upload-btn').addEventListener('click', () => {
+            document.getElementById('file-input').click();
+        });
+
+        // Initialize
+        initWebSocket();
+        updateClientsList();
+        setInterval(updateClientsList, 5000); // Refresh clients list every 5 seconds
+    </script>
+</body>
+</html> 
