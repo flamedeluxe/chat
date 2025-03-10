@@ -16,8 +16,21 @@ class ChatWidget {
         this.audioChunks = [];
         this.ws = null;
         this.selectedFiles = [];
+        this.eventListeners = new Map();
         
         this.init();
+    }
+
+    on(event, callback) {
+        if (!this.eventListeners.has(event)) {
+            this.eventListeners.set(event, []);
+        }
+        this.eventListeners.get(event).push(callback);
+    }
+
+    emit(event, data) {
+        const listeners = this.eventListeners.get(event) || [];
+        listeners.forEach(callback => callback(data));
     }
 
     async init() {
@@ -235,22 +248,25 @@ class ChatWidget {
     }
 
     initializeWebSocket() {
-        const wsUrl = `${this.options.websocketUrl}?userId=${this.options.userId}`;
+        const wsUrl = `${this.options.websocketUrl}?userId=${this.options.userId}&roomId=${this.options.roomId}`;
         this.ws = new WebSocket(wsUrl);
         
         this.ws.onopen = () => {
             this.updateStatus('Connected');
+            this.emit('connected');
         };
         
         this.ws.onclose = () => {
             this.updateStatus('Disconnected');
+            this.emit('disconnected');
             setTimeout(() => this.initializeWebSocket(), 5000);
         };
         
         this.ws.onmessage = (event) => {
             const data = JSON.parse(event.data);
             if (data.type === 'new_message') {
-                this.addMessage(data.message, true);
+                this.addMessage(data.message);
+                this.emit('message', data.message);
             }
         };
     }
