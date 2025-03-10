@@ -1,7 +1,4 @@
 (function() {
-    // Определяем базовый путь
-    const basePath = window.location.pathname.includes('/chat/') ? '/chat' : '';
-    
     // Generate unique user ID
     const userId = 'user_' + Math.random().toString(36).substr(2, 9);
     
@@ -150,7 +147,7 @@
     const sendButton = document.querySelector('.chat-widget-send');
 
     // Initialize WebSocket connection
-    const ws = new WebSocket(`ws://${window.location.host}${basePath}?userId=${userId}`);
+    const ws = new WebSocket(`wss://${window.location.host}?userId=${userId}`);
 
     ws.onopen = () => {
         console.log('WebSocket connected');
@@ -193,7 +190,7 @@
         textarea.value = '';
 
         // Send to server
-        fetch(`${basePath}/api/messages`, {
+        fetch('/api/messages', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
