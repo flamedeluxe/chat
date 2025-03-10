@@ -50,7 +50,9 @@
                 </div>
             </div>
             <button class="cw-button">
-                <span class="cw-button-icon">💬</span>
+                <span class="cw-button-icon">
+                    <i class="fas fa-comments"></i>
+                </span>
             </button>
         `;
 
