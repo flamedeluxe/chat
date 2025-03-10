@@ -1,4 +1,8 @@
 (function() {
+    // Определяем URL для WebSocket в зависимости от окружения
+    const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+    const wsUrl = `${wsProtocol}//${window.location.host}`;
+    
     // Generate unique user ID
     const userId = 'user_' + Math.random().toString(36).substr(2, 9);
     
@@ -40,7 +44,7 @@
 
         .chat-widget-header {
             padding: 15px;
-            background: #2196F3;
+            background: #4f46e5;
             color: white;
             border-radius: 10px 10px 0 0;
             display: flex;
@@ -85,7 +89,7 @@
 
         .chat-widget-send {
             padding: 8px 15px;
-            background: #2196F3;
+            background: #4f46e5;
             color: white;
             border: none;
             border-radius: 4px;
@@ -99,7 +103,7 @@
             width: 60px;
             height: 60px;
             border-radius: 30px;
-            background: #2196F3;
+            background: #4f46e5;
             color: white;
             border: none;
             cursor: pointer;
@@ -120,15 +124,23 @@
         }
 
         .message.user {
-            background: #E3F2FD;
+            background: #e3f2fd;
+            color: #1e3a8a;
             margin-left: auto;
             border-bottom-right-radius: 5px;
         }
 
         .message.system {
-            background: #F5F5F5;
+            background: #f3f4f6;
+            color: #1f2937;
             margin-right: auto;
             border-bottom-left-radius: 5px;
+        }
+
+        .message-timestamp {
+            font-size: 0.75rem;
+            color: #6b7280;
+            margin-top: 4px;
         }
     `;
 
@@ -147,7 +159,7 @@
     const sendButton = document.querySelector('.chat-widget-send');
 
     // Initialize WebSocket connection
-    const ws = new WebSocket(`wss://${window.location.host}?userId=${userId}`);
+    const ws = new WebSocket(`${wsUrl}?userId=${userId}`);
 
     ws.onopen = () => {
         console.log('WebSocket connected');
@@ -203,7 +215,12 @@
     function addMessage(message, isSystem = false) {
         const messageDiv = document.createElement('div');
         messageDiv.className = `message ${isSystem ? 'system' : 'user'}`;
-        messageDiv.textContent = message.content;
+        
+        let content = message.content;
+        const timestamp = new Date(message.timestamp).toLocaleTimeString();
+        content += `<div class="message-timestamp">${timestamp}</div>`;
+        
+        messageDiv.innerHTML = content;
         messagesContainer.appendChild(messageDiv);
         messagesContainer.scrollTop = messagesContainer.scrollHeight;
     }

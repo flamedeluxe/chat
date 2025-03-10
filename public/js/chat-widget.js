@@ -159,14 +159,23 @@ class ChatWidget {
             }
 
             .message-bubble.sent {
-                background: #4f46e5;
-                color: white;
+                background: #e3f2fd;
+                color: #1e3a8a;
                 margin-left: auto;
+                border-bottom-right-radius: 5px;
             }
 
             .message-bubble.received {
                 background: #f3f4f6;
-                color: black;
+                color: #1f2937;
+                margin-right: auto;
+                border-bottom-left-radius: 5px;
+            }
+
+            .message-timestamp {
+                font-size: 0.75rem;
+                color: #6b7280;
+                margin-top: 4px;
             }
 
             .recording-indicator {
@@ -191,6 +200,31 @@ class ChatWidget {
 
             .file-preview.active {
                 display: flex;
+            }
+
+            .audio-message {
+                margin-top: 8px;
+            }
+
+            .audio-message audio {
+                width: 100%;
+                max-width: 200px;
+            }
+
+            .file-message {
+                margin-top: 8px;
+                display: flex;
+                align-items: center;
+                gap: 8px;
+            }
+
+            .file-message a {
+                color: #4f46e5;
+                text-decoration: none;
+            }
+
+            .file-message a:hover {
+                text-decoration: underline;
             }
         `;
 

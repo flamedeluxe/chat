@@ -36,34 +36,8 @@
     </div>
 
     <!-- Include the chat widget script -->
-    <script src="/static/js/chat-widget.js"></script>
     
-    <!-- Initialize the chat widget -->
-    <script>
-        // Определяем URL для WebSocket в зависимости от окружения
-        const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-        const wsUrl = `${wsProtocol}//${window.location.host}`;
-        
-        // Инициализируем чат
-        const chat = new ChatWidget({
-            websocketUrl: wsUrl,
-            apiUrl: window.location.origin,
-            position: 'bottom-right',
-            theme: 'light',
-            userId: 'user_' + Math.random().toString(36).substr(2, 9)
-        });
-
-        // Обновляем статус подключения
-        const statusElement = document.getElementById('connection-status');
-        chat.on('connected', () => {
-            statusElement.textContent = 'Подключено';
-            statusElement.className = 'text-sm text-green-600';
-        });
-        
-        chat.on('disconnected', () => {
-            statusElement.textContent = 'Отключено';
-            statusElement.className = 'text-sm text-red-600';
-        });
-    </script>
+    <script src="/js/chat-embed.js"></script>
+    
 </body>
 </html>
