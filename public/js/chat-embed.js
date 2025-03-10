@@ -346,15 +346,13 @@
                 // Create message object
                 const message = {
                     id: Date.now().toString(),
-                    userId,
+                    userId: userId,
                     content,
                     type: 'text',
                     files: uploadedFiles,
-                    timestamp: new Date().toISOString()
+                    timestamp: new Date().toISOString(),
+                    isConsultant: false  // Явно указываем, что это сообщение от пользователя
                 };
-
-                // Add message to chat immediately
-                addMessage(message, false);
 
                 // Clear input and files
                 textarea.value = '';
@@ -514,8 +512,16 @@
         // WebSocket message handler
         ws.addEventListener('message', (event) => {
             const data = JSON.parse(event.data);
+            console.log('Received WebSocket message:', data);
+            
             if (data.type === 'new_message') {
-                addMessage(data.message, true);
+                const message = data.message;
+                console.log('Processing message:', message);
+                console.log('Message isConsultant flag:', message.isConsultant);
+                
+                // Если сообщение от консультанта (isConsultant: true) - показываем как системное
+                // Если от пользователя (isConsultant: false) - показываем как пользовательское
+                addMessage(message, message.isConsultant === true);
             }
         });
     });
