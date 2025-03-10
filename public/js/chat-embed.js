@@ -1,14 +1,10 @@
 (function() {
     document.addEventListener('DOMContentLoaded', function() {
-        // Add Font Awesome and Tailwind CSS
+        // Add Font Awesome
         const fontAwesome = document.createElement('link');
         fontAwesome.rel = 'stylesheet';
         fontAwesome.href = 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css';
         document.head.appendChild(fontAwesome);
-
-        const tailwind = document.createElement('script');
-        tailwind.src = 'https://cdn.tailwindcss.com';
-        document.head.appendChild(tailwind);
 
         // Определяем URL для WebSocket в зависимости от окружения
         const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
@@ -19,49 +15,49 @@
         
         // Create widget HTML
         const widgetHTML = `
-            <div id="chat-widget" class="chat-widget">
-                <div class="chat-widget-header">
-                    <span class="chat-widget-title">Онлайн-консультант</span>
-                    <button class="chat-widget-toggle">×</button>
+            <div id="chat-widget" class="cw-widget">
+                <div class="cw-header">
+                    <span class="cw-title">Онлайн-консультант</span>
+                    <button class="cw-toggle">×</button>
                 </div>
-                <div class="chat-widget-messages"></div>
-                <div class="chat-widget-input">
-                    <div class="chat-widget-tools">
-                        <button class="chat-widget-tool-btn" id="chat-widget-file">
+                <div class="cw-messages"></div>
+                <div class="cw-input">
+                    <div class="cw-tools">
+                        <button class="cw-tool-btn" id="chat-widget-file">
                             <i class="fas fa-paperclip"></i>
                             <input type="file" hidden multiple>
                         </button>
-                        <button class="chat-widget-tool-btn" id="chat-widget-voice">
+                        <button class="cw-tool-btn" id="chat-widget-voice">
                             <i class="fas fa-microphone"></i>
                         </button>
                     </div>
-                    <div class="recording-indicator">
-                        Запись... <span class="recording-time">00:00</span>
-                        <button class="chat-widget-tool-btn" id="chat-widget-stop-recording">
+                    <div class="cw-recording-indicator">
+                        Запись... <span class="cw-recording-time">00:00</span>
+                        <button class="cw-tool-btn" id="chat-widget-stop-recording">
                             <i class="fas fa-stop"></i>
                         </button>
                     </div>
-                    <div class="file-preview">
-                        <span class="file-name"></span>
-                        <button class="chat-widget-tool-btn" id="chat-widget-remove-file">
+                    <div class="cw-file-preview">
+                        <span class="cw-file-name"></span>
+                        <button class="cw-tool-btn" id="chat-widget-remove-file">
                             <i class="fas fa-times"></i>
                         </button>
                     </div>
-                    <div class="chat-widget-input-container">
+                    <div class="cw-input-container">
                         <textarea placeholder="Введите сообщение..."></textarea>
-                        <button class="chat-widget-send">Отправить</button>
+                        <button class="cw-send">Отправить</button>
                     </div>
                 </div>
             </div>
-            <button class="chat-widget-button">
-                <span class="chat-widget-button-icon">💬</span>
+            <button class="cw-button">
+                <span class="cw-button-icon">💬</span>
             </button>
         `;
 
         // Create and inject styles
         const styles = document.createElement('style');
         styles.textContent = `
-            .chat-widget {
+            .cw-widget {
                 position: fixed;
                 bottom: 100px;
                 right: 20px;
@@ -74,9 +70,10 @@
                 flex-direction: column;
                 z-index: 1000;
                 display: none;
+                font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
             }
 
-            .chat-widget-header {
+            .cw-header {
                 padding: 15px;
                 background: #4f46e5;
                 color: white;
@@ -86,70 +83,94 @@
                 align-items: center;
             }
 
-            .chat-widget-title {
-                font-weight: bold;
+            .cw-title {
+                font-weight: 600;
+                font-size: 16px;
             }
 
-            .chat-widget-toggle {
+            .cw-toggle {
                 background: none;
                 border: none;
                 color: white;
                 font-size: 24px;
                 cursor: pointer;
                 padding: 0;
+                line-height: 1;
             }
 
-            .chat-widget-messages {
+            .cw-messages {
                 flex: 1;
                 padding: 15px;
                 overflow-y: auto;
+                background: #f9fafb;
             }
 
-            .chat-widget-input {
+            .cw-input {
                 padding: 15px;
-                border-top: 1px solid #eee;
+                border-top: 1px solid #e5e7eb;
                 display: flex;
                 flex-direction: column;
                 gap: 10px;
+                background: white;
             }
 
-            .chat-widget-tools {
+            .cw-tools {
                 display: flex;
                 gap: 10px;
             }
 
-            .chat-widget-tool-btn {
+            .cw-tool-btn {
                 padding: 8px;
                 background: none;
                 border: none;
                 cursor: pointer;
                 color: #6b7280;
+                border-radius: 4px;
+                transition: background-color 0.2s;
             }
 
-            .chat-widget-input-container {
+            .cw-tool-btn:hover {
+                background-color: #f3f4f6;
+            }
+
+            .cw-input-container {
                 display: flex;
                 gap: 10px;
             }
 
-            .chat-widget-input textarea {
+            .cw-input textarea {
                 flex: 1;
-                padding: 8px;
-                border: 1px solid #ddd;
-                border-radius: 4px;
+                padding: 8px 12px;
+                border: 1px solid #e5e7eb;
+                border-radius: 6px;
                 resize: none;
                 height: 40px;
+                font-size: 14px;
+                line-height: 1.5;
+                transition: border-color 0.2s;
             }
 
-            .chat-widget-send {
-                padding: 8px 15px;
+            .cw-input textarea:focus {
+                outline: none;
+                border-color: #4f46e5;
+            }
+
+            .cw-send {
+                padding: 8px 16px;
                 background: #4f46e5;
                 color: white;
                 border: none;
-                border-radius: 4px;
+                border-radius: 6px;
                 cursor: pointer;
+                font-weight: 500;
+                transition: background-color 0.2s;
             }
 
-            .chat-widget-button {
+            .cw-send:hover {
+                background: #4338ca;
+            }
+
+            .cw-button {
                 position: fixed;
                 bottom: 20px;
                 right: 20px;
@@ -162,86 +183,104 @@
                 cursor: pointer;
                 box-shadow: 0 5px 20px rgba(0,0,0,0.15);
                 z-index: 1000;
+                transition: transform 0.2s, background-color 0.2s;
             }
 
-            .chat-widget-button-icon {
+            .cw-button:hover {
+                transform: scale(1.05);
+                background: #4338ca;
+            }
+
+            .cw-button-icon {
                 font-size: 24px;
             }
 
-            .message {
+            .cw-message {
                 margin-bottom: 10px;
                 max-width: 80%;
                 padding: 8px 12px;
                 border-radius: 15px;
                 word-wrap: break-word;
+                font-size: 14px;
+                line-height: 1.5;
             }
 
-            .message.user {
+            .cw-message.user {
                 background: #e3f2fd;
                 color: #1e3a8a;
                 margin-left: auto;
                 border-bottom-right-radius: 5px;
             }
 
-            .message.system {
+            .cw-message.system {
                 background: #f3f4f6;
                 color: #1f2937;
                 margin-right: auto;
                 border-bottom-left-radius: 5px;
             }
 
-            .message-timestamp {
-                font-size: 0.75rem;
+            .cw-message-timestamp {
+                font-size: 12px;
                 color: #6b7280;
                 margin-top: 4px;
             }
 
-            .recording-indicator {
+            .cw-recording-indicator {
                 display: none;
                 color: #ef4444;
                 align-items: center;
-                gap: 5px;
+                gap: 8px;
+                font-size: 14px;
+                padding: 8px;
+                background: #fee2e2;
+                border-radius: 6px;
             }
 
-            .recording-indicator.active {
+            .cw-recording-indicator.active {
                 display: flex;
             }
 
-            .file-preview {
+            .cw-file-preview {
                 display: none;
                 align-items: center;
-                gap: 5px;
-                padding: 5px;
+                gap: 8px;
+                padding: 8px;
                 background: #f3f4f6;
-                border-radius: 5px;
+                border-radius: 6px;
+                font-size: 14px;
             }
 
-            .file-preview.active {
+            .cw-file-preview.active {
                 display: flex;
             }
 
-            .audio-message {
+            .cw-audio-message {
                 margin-top: 8px;
             }
 
-            .audio-message audio {
+            .cw-audio-message audio {
                 width: 100%;
                 max-width: 200px;
+                height: 36px;
+                border-radius: 4px;
             }
 
-            .file-message {
+            .cw-file-message {
                 margin-top: 8px;
                 display: flex;
                 align-items: center;
                 gap: 8px;
+                font-size: 14px;
             }
 
-            .file-message a {
+            .cw-file-message a {
                 color: #4f46e5;
                 text-decoration: none;
+                transition: color 0.2s;
             }
 
-            .file-message a:hover {
+            .cw-file-message a:hover {
+                color: #4338ca;
                 text-decoration: underline;
             }
         `;
@@ -253,19 +292,19 @@
         document.body.appendChild(container);
 
         // Get DOM elements
-        const widget = document.querySelector('.chat-widget');
-        const button = document.querySelector('.chat-widget-button');
-        const toggle = document.querySelector('.chat-widget-toggle');
-        const messagesContainer = document.querySelector('.chat-widget-messages');
-        const textarea = document.querySelector('.chat-widget-input textarea');
-        const sendButton = document.querySelector('.chat-widget-send');
+        const widget = document.querySelector('.cw-widget');
+        const button = document.querySelector('.cw-button');
+        const toggle = document.querySelector('.cw-toggle');
+        const messagesContainer = document.querySelector('.cw-messages');
+        const textarea = document.querySelector('.cw-input textarea');
+        const sendButton = document.querySelector('.cw-send');
         const fileButton = document.querySelector('#chat-widget-file');
         const fileInput = fileButton.querySelector('input[type="file"]');
         const voiceButton = document.querySelector('#chat-widget-voice');
         const stopRecordingButton = document.querySelector('#chat-widget-stop-recording');
-        const recordingIndicator = document.querySelector('.recording-indicator');
-        const filePreview = document.querySelector('.file-preview');
-        const fileNameElement = filePreview.querySelector('.file-name');
+        const recordingIndicator = document.querySelector('.cw-recording-indicator');
+        const filePreview = document.querySelector('.cw-file-preview');
+        const fileNameElement = filePreview.querySelector('.cw-file-name');
         const removeFileButton = document.querySelector('#chat-widget-remove-file');
 
         let isRecording = false;
@@ -326,14 +365,19 @@
                 // Upload files first if any
                 let uploadedFiles = [];
                 if (selectedFiles.length > 0) {
-                    const formData = new FormData();
-                    selectedFiles.forEach(file => {
-                        formData.append('files', file.data);
-                    });
-
+                    // Отправляем файлы напрямую через API
                     const uploadResponse = await fetch('/api/upload', {
                         method: 'POST',
-                        body: formData
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            files: selectedFiles.map(file => ({
+                                name: file.name,
+                                type: file.type,
+                                data: file.data
+                            }))
+                        })
                     });
 
                     if (!uploadResponse.ok) {
@@ -381,23 +425,23 @@
         // Add message to chat
         function addMessage(message, isSystem = false) {
             const messageDiv = document.createElement('div');
-            messageDiv.className = `message ${isSystem ? 'system' : 'user'}`;
+            messageDiv.className = `cw-message ${isSystem ? 'system' : 'user'}`;
             
             let content = message.content;
             
             if (message.files && message.files.length > 0) {
                 message.files.forEach(file => {
-                    if (file.type.startsWith('audio/')) {
+                    if (file.isAudio) {
                         content += `
-                            <div class="audio-message">
-                                <audio controls src="${file.url}"></audio>
+                            <div class="cw-audio-message">
+                                <audio controls src="${file.data}"></audio>
                             </div>
                         `;
                     } else {
                         content += `
-                            <div class="file-message">
+                            <div class="cw-file-message">
                                 <i class="fas fa-file"></i>
-                                <a href="${file.url}" target="_blank">${file.name}</a>
+                                <a href="${file.data}" target="_blank">${file.name}</a>
                             </div>
                         `;
                     }
@@ -405,7 +449,7 @@
             }
             
             const timestamp = new Date(message.timestamp).toLocaleTimeString();
-            content += `<div class="message-timestamp">${timestamp}</div>`;
+            content += `<div class="cw-message-timestamp">${timestamp}</div>`;
             
             messageDiv.innerHTML = content;
             messagesContainer.appendChild(messageDiv);
@@ -416,14 +460,18 @@
         function handleFileSelect(event) {
             const files = Array.from(event.target.files);
             files.forEach(file => {
-                selectedFiles.push({
-                    type: file.type,
-                    name: file.name,
-                    data: file,
-                    url: URL.createObjectURL(file)
-                });
+                const reader = new FileReader();
+                reader.readAsDataURL(file);
+                reader.onloadend = () => {
+                    selectedFiles.push({
+                        type: file.type,
+                        name: file.name,
+                        data: reader.result, // base64 строка
+                        isAudio: false
+                    });
+                    updateFilePreview();
+                };
             });
-            updateFilePreview();
             event.target.value = '';
         }
 
@@ -448,17 +496,23 @@
                     audioChunks.push(event.data);
                 };
                 
-                mediaRecorder.onstop = () => {
+                mediaRecorder.onstop = async () => {
                     const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
-                    selectedFiles.push({
-                        type: 'audio/wav',
-                        name: 'Голосовое сообщение.wav',
-                        data: audioBlob,
-                        url: URL.createObjectURL(audioBlob)
-                    });
-                    updateFilePreview();
-                    isRecording = false;
-                    updateRecordingUI();
+                    
+                    // Конвертируем аудио в base64
+                    const reader = new FileReader();
+                    reader.readAsDataURL(audioBlob);
+                    reader.onloadend = () => {
+                        selectedFiles.push({
+                            type: 'audio/wav',
+                            name: 'Голосовое сообщение.wav',
+                            data: reader.result, // base64 строка
+                            isAudio: true // флаг для определения аудио файла
+                        });
+                        updateFilePreview();
+                        isRecording = false;
+                        updateRecordingUI();
+                    };
                 };
                 
                 mediaRecorder.start();
@@ -486,7 +540,7 @@
             if (!isRecording) return;
             
             let seconds = 0;
-            const timerElement = recordingIndicator.querySelector('.recording-time');
+            const timerElement = recordingIndicator.querySelector('.cw-recording-time');
             
             const updateTimer = () => {
                 if (!isRecording) return;
@@ -524,5 +578,27 @@
                 addMessage(message, message.isConsultant === true);
             }
         });
+
+        // Add new styles
+        const additionalStyles = document.createElement('style');
+        additionalStyles.textContent = `
+            .cw-file-error {
+                color: #ef4444;
+                margin-left: 8px;
+                cursor: pointer;
+            }
+
+            .cw-file-sending {
+                color: #6b7280;
+                margin-left: 8px;
+            }
+
+            .cw-file-message, .cw-audio-message {
+                position: relative;
+                display: flex;
+                align-items: center;
+            }
+        `;
+        document.head.appendChild(additionalStyles);
     });
 })(); 

@@ -60,5 +60,20 @@ app.post('/api/messages', (req, res) => {
     }
 });
 
+// Route handler for file upload
+app.post('/api/upload', (req, res) => {
+    try {
+        if (!req.body.files || req.body.files.length === 0) {
+            return res.status(400).json({ error: 'No files provided' });
+        }
+
+        // Просто передаем файлы дальше
+        res.json(req.body.files);
+    } catch (error) {
+        console.error('Error handling file upload:', error);
+        res.status(400).json({ error: error.message });
+    }
+});
+
 // Export app instance
 module.exports = app; 
