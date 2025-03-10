@@ -1,4 +1,7 @@
 (function() {
+    // Определяем базовый путь
+    const basePath = window.location.pathname.includes('/chat/') ? '/chat' : '';
+    
     // Generate unique user ID
     const userId = 'user_' + Math.random().toString(36).substr(2, 9);
     
@@ -146,16 +149,16 @@
     const textarea = document.querySelector('.chat-widget-input textarea');
     const sendButton = document.querySelector('.chat-widget-send');
 
-    // Определяем базовый путь
-    const basePath = window.location.pathname.includes('/chat/') ? '/chat' : '';
+    // Initialize WebSocket connection
+    const ws = new WebSocket(`ws://${window.location.host}${basePath}?userId=${userId}`);
 
-    // Инициализируем чат с учетом базового пути
-    const chat = new ChatWidget({
-        websocketUrl: \`ws://\${window.location.host}\${basePath}\`,
-        apiUrl: \`\${window.location.origin}\${basePath}\`,
-        position: 'bottom-right',
-        theme: 'light'
-    });
+    ws.onopen = () => {
+        console.log('WebSocket connected');
+    };
+
+    ws.onclose = () => {
+        console.log('WebSocket disconnected');
+    };
 
     // Toggle widget visibility
     button.addEventListener('click', () => {
@@ -190,7 +193,7 @@
         textarea.value = '';
 
         // Send to server
-        fetch('/api/messages', {
+        fetch(`${basePath}/api/messages`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -202,7 +205,7 @@
     // Add message to chat
     function addMessage(message, isSystem = false) {
         const messageDiv = document.createElement('div');
-        messageDiv.className = \`message \${isSystem ? 'system' : 'user'}\`;
+        messageDiv.className = `message ${isSystem ? 'system' : 'user'}`;
         messageDiv.textContent = message.content;
         messagesContainer.appendChild(messageDiv);
         messagesContainer.scrollTop = messagesContainer.scrollHeight;
