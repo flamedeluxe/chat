@@ -318,34 +318,66 @@
         stopRecordingButton.addEventListener('click', stopRecording);
 
         // Send message function
-        function sendMessage() {
+        async function sendMessage() {
             const content = textarea.value.trim();
             if (!content && selectedFiles.length === 0) return;
 
-            // Create message object
-            const message = {
-                id: Date.now().toString(),
-                userId,
-                content,
-                type: 'text',
-                files: [],
-                timestamp: new Date().toISOString()
-            };
+            try {
+                // Upload files first if any
+                let uploadedFiles = [];
+                if (selectedFiles.length > 0) {
+                    const formData = new FormData();
+                    selectedFiles.forEach(file => {
+                        formData.append('files', file.data);
+                    });
 
-            // Add message to chat immediately
-            addMessage(message, false);
+                    const uploadResponse = await fetch('/api/upload', {
+                        method: 'POST',
+                        body: formData
+                    });
 
-            // Clear input
-            textarea.value = '';
+                    if (!uploadResponse.ok) {
+                        throw new Error('Failed to upload files');
+                    }
 
-            // Send to server
-            fetch('/api/messages', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(message)
-            });
+                    uploadedFiles = await uploadResponse.json();
+                }
+
+                // Create message object
+                const message = {
+                    id: Date.now().toString(),
+                    userId,
+                    content,
+                    type: 'text',
+                    files: uploadedFiles,
+                    timestamp: new Date().toISOString()
+                };
+
+                // Add message to chat immediately
+                addMessage(message, false);
+
+                // Clear input and files
+                textarea.value = '';
+                selectedFiles = [];
+                updateFilePreview();
+
+                // Send to server
+                const response = await fetch('/api/messages', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(message)
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to send message');
+                }
+
+            } catch (error) {
+                console.error('Error sending message:', error);
+                alert('Не удалось отправить сообщение. Пожалуйста, попробуйте снова.');
+            }
         }
 
         // Add message to chat
