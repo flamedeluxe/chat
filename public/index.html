@@ -3,72 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chat App</title>
-    <link href="/css/style.css" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <title>Chat Widget</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
 </head>
-<body class="bg-gray-100 h-screen">
-    <div class="container mx-auto px-4 h-screen py-8">
-        <div class="bg-white rounded-lg shadow-lg h-full flex flex-col">
-            <!-- Chat Header -->
-            <div class="p-4 border-b flex items-center justify-between">
-                <h1 class="text-xl font-bold">Chat Room</h1>
-                <div class="text-sm text-gray-500" id="connection-status">
-                    Connecting...
-                </div>
-            </div>
-
-            <!-- Messages Container -->
-            <div class="flex-1 p-4 overflow-y-auto" id="messages-container">
-                <!-- Messages will be inserted here -->
-            </div>
-
-            <!-- Input Area -->
-            <div class="border-t p-4">
-                <div class="flex items-center gap-2">
-                    <!-- File Upload Button -->
-                    <button class="p-2 text-gray-500 hover:text-gray-700" id="file-upload-btn">
-                        <i class="fas fa-paperclip"></i>
-                        <input type="file" id="file-input" class="hidden" multiple>
-                    </button>
-
-                    <!-- Voice Message Button -->
-                    <button class="p-2 text-gray-500 hover:text-gray-700" id="voice-record-btn">
-                        <i class="fas fa-microphone"></i>
-                    </button>
-
-                    <!-- Text Input -->
-                    <input type="text" id="message-input" 
-                           class="flex-1 border rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                           placeholder="Type your message...">
-
-                    <!-- Send Button -->
-                    <button class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600" id="send-btn">
-                        Send
-                    </button>
-                </div>
-
-                <!-- Recording Indicator -->
-                <div id="recording-indicator" class="hidden mt-2 text-red-500 text-sm">
-                    Recording... <span id="recording-time">00:00</span>
-                    <button class="ml-2 text-gray-500 hover:text-gray-700" id="stop-recording-btn">
-                        <i class="fas fa-stop"></i> Stop
-                    </button>
-                </div>
-
-                <!-- File Preview -->
-                <div id="file-preview" class="hidden mt-2">
-                    <div class="flex items-center gap-2">
-                        <span class="text-sm text-gray-500" id="file-name"></span>
-                        <button class="text-red-500 hover:text-red-700" id="remove-file-btn">
-                            <i class="fas fa-times"></i>
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <script src="/js/chat.js"></script>
+<body>
+    <script src="js/chat-widget.js"></script>
+    <script src="js/chat-embed.js"></script>
 </body>
 </html> 

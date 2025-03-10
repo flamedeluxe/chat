@@ -20,9 +20,6 @@
             border-radius: 5px;
             overflow-x: auto;
         }
-        .code-block {
-            margin: 20px 0;
-        }
     </style>
 </head>
 <body>
@@ -30,40 +27,8 @@
     
     <div class="demo-content">
         <h2>Как встроить чат на свой сайт</h2>
-        <p>1. Добавьте конфигурацию чата перед подключением скрипта:</p>
-        <pre><code>&lt;script&gt;
-    window.CHAT_CONFIG = {
-        siteId: 'your-site-id', // Уникальный идентификатор вашего сайта
-        serverUrl: 'http://your-chat-server.com', // URL вашего сервера чата
-        title: 'Ваш заголовок чата' // Заголовок виджета
-    };
-&lt;/script&gt;</code></pre>
-
-        <p>2. Подключите скрипт чата:</p>
-        <pre><code>&lt;script src="http://your-chat-server.com/js/chat-embed.js"&gt;&lt;/script&gt;</code></pre>
-    </div>
-
-    <div class="demo-content">
-        <h2>Пример использования</h2>
-        <p>Вот как это будет выглядеть на вашем сайте:</p>
-        <pre><code>&lt;!DOCTYPE html&gt;
-&lt;html&gt;
-&lt;head&gt;
-    &lt;title&gt;Ваш сайт&lt;/title&gt;
-&lt;/head&gt;
-&lt;body&gt;
-    &lt;!-- Ваш контент сайта --&gt;
-
-    &lt;script&gt;
-        window.CHAT_CONFIG = {
-            siteId: 'my-awesome-site',
-            serverUrl: 'http://your-chat-server.com',
-            title: 'Поддержка клиентов'
-        };
-    &lt;/script&gt;
-    &lt;script src="http://your-chat-server.com/js/chat-embed.js"&gt;&lt;/script&gt;
-&lt;/body&gt;
-&lt;/html&gt;</code></pre>
+        <p>Добавьте следующий код перед закрывающим тегом &lt;/body&gt;:</p>
+        <pre><code>&lt;script src="http://localhost:3000/js/chat-embed.js"&gt;&lt;/script&gt;</code></pre>
     </div>
 
     <div class="demo-content">
@@ -73,14 +38,6 @@
         <p>Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.</p>
     </div>
 
-    <!-- Конфигурация чата -->
-    <script>
-        window.CHAT_CONFIG = {
-            siteId: 'demo-site',
-            serverUrl: 'http://localhost:3000',
-            title: 'Демо чат'
-        };
-    </script>
     <!-- Подключаем виджет чата -->
     <script src="/js/chat-embed.js"></script>
 </body>

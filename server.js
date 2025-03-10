@@ -13,8 +13,13 @@ const wss = new WebSocket.Server({ server });
 // Middleware
 app.use(cors());
 app.use(express.json());
-app.use(express.static('public'));
-app.use('/uploads', express.static('uploads'));
+
+// Определяем базовый путь
+const basePath = process.env.BASE_PATH || '';
+
+// Статические файлы с учетом базового пути
+app.use(basePath, express.static('public'));
+app.use(basePath + '/uploads', express.static('uploads'));
 
 // Load responses
 let responses = {};
@@ -100,7 +105,7 @@ async function generateAutoResponse(message) {
 }
 
 // REST API endpoints
-app.post('/api/messages', async (req, res) => {
+app.post(basePath + '/api/messages', async (req, res) => {
     try {
         // Log incoming request
         console.log('Received message request:', req.body);
@@ -170,7 +175,7 @@ app.post('/api/messages', async (req, res) => {
     }
 });
 
-app.post('/api/upload', upload.array('files'), async (req, res) => {
+app.post(basePath + '/api/upload', upload.array('files'), async (req, res) => {
     try {
         const files = req.files.map(file => ({
             id: Date.now().toString(),
@@ -187,7 +192,7 @@ app.post('/api/upload', upload.array('files'), async (req, res) => {
     }
 });
 
-app.get('/api/messages/:userId', (req, res) => {
+app.get(basePath + '/api/messages/:userId', (req, res) => {
     const { userId } = req.params;
     const { limit = 50, before } = req.query;
     
@@ -204,7 +209,8 @@ app.get('/api/messages/:userId', (req, res) => {
 
 // WebSocket connection handler
 wss.on('connection', (ws, req) => {
-    const params = new URLSearchParams(req.url.split('?')[1]);
+    const url = new URL(req.url, 'http://localhost');
+    const params = new URLSearchParams(url.search);
     const userId = params.get('userId');
     
     ws.userId = userId;
@@ -220,5 +226,5 @@ wss.on('connection', (ws, req) => {
 
 const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => {
-    console.log(`Server is running on port ${PORT}`);
+    console.log(`Server is running on port ${PORT} with base path: ${basePath}`);
 }); 

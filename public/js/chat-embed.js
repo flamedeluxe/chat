@@ -1,11 +1,4 @@
 (function() {
-    // Configuration
-    const config = {
-        siteId: window.CHAT_CONFIG?.siteId || 'default',
-        serverUrl: window.CHAT_CONFIG?.serverUrl || window.location.origin,
-        title: window.CHAT_CONFIG?.title || 'Онлайн-консультант'
-    };
-    
     // Generate unique user ID
     const userId = 'user_' + Math.random().toString(36).substr(2, 9);
     
@@ -13,7 +6,7 @@
     const widgetHTML = `
         <div id="chat-widget" class="chat-widget">
             <div class="chat-widget-header">
-                <span class="chat-widget-title">${config.title}</span>
+                <span class="chat-widget-title">Онлайн-консультант</span>
                 <button class="chat-widget-toggle">×</button>
             </div>
             <div class="chat-widget-messages"></div>
@@ -153,8 +146,16 @@
     const textarea = document.querySelector('.chat-widget-input textarea');
     const sendButton = document.querySelector('.chat-widget-send');
 
-    // WebSocket connection
-    const ws = new WebSocket(\`ws://\${config.serverUrl.replace(/^http/, 'ws')}?userId=\${userId}&siteId=\${config.siteId}\`);
+    // Определяем базовый путь
+    const basePath = window.location.pathname.includes('/chat/') ? '/chat' : '';
+
+    // Инициализируем чат с учетом базового пути
+    const chat = new ChatWidget({
+        websocketUrl: \`ws://\${window.location.host}\${basePath}\`,
+        apiUrl: \`\${window.location.origin}\${basePath}\`,
+        position: 'bottom-right',
+        theme: 'light'
+    });
 
     // Toggle widget visibility
     button.addEventListener('click', () => {
@@ -176,7 +177,6 @@
         const message = {
             id: Date.now().toString(),
             userId,
-            siteId: config.siteId,
             content,
             type: 'text',
             files: [],
@@ -190,7 +190,7 @@
         textarea.value = '';
 
         // Send to server
-        fetch(\`\${config.serverUrl}/api/messages\`, {
+        fetch('/api/messages', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -220,7 +220,7 @@
     // WebSocket message handler
     ws.addEventListener('message', (event) => {
         const data = JSON.parse(event.data);
-        if (data.type === 'new_message' && data.message.siteId === config.siteId) {
+        if (data.type === 'new_message') {
             addMessage(data.message, true);
         }
     });
