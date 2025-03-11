@@ -1,0 +1,69 @@
+version: '3.8'
+
+services:
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/conf.d:/etc/nginx/conf.d
+      - ./modx:/var/www/html
+      - ./chat:/var/www/html/chat
+      - ./certbot/conf:/etc/letsencrypt
+      - ./certbot/www:/var/www/certbot
+    depends_on:
+      - php
+    networks:
+      - modx-network
+    command: "/bin/sh -c 'while :; do sleep 6h & wait $${!}; nginx -s reload; done & nginx -g \"daemon off;\"'"
+
+  certbot:
+    image: certbot/certbot
+    volumes:
+      - ./certbot/conf:/etc/letsencrypt
+      - ./certbot/www:/var/www/certbot
+    entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew; sleep 12h & wait $${!}; done;'"
+
+  php:
+    build:
+      context: .
+      dockerfile: php.Dockerfile
+    volumes:
+      - ./modx:/var/www/html
+      - ./chat:/var/www/html/chat
+    environment:
+      - PHP_MEMORY_LIMIT=256M
+      - PHP_MAX_EXECUTION_TIME=300
+      - PHP_POST_MAX_SIZE=64M
+      - PHP_UPLOAD_MAX_FILESIZE=64M
+      - MYSQL_HOST=mysql
+      - MYSQL_DATABASE=modx
+      - MYSQL_USER=modx
+      - MYSQL_PASSWORD=modx_password
+    networks:
+      - modx-network
+    command: >
+      bash -c "pm2 start /var/www/html/chat/server.js &&
+              php-fpm"
+
+  mysql:
+    image: mysql:8.0
+    environment:
+      MYSQL_ROOT_PASSWORD: root_password
+      MYSQL_DATABASE: modx
+      MYSQL_USER: modx
+      MYSQL_PASSWORD: modx_password
+    volumes:
+      - mysql_data:/var/lib/mysql
+    ports:
+      - "3306:3306"
+    networks:
+      - modx-network
+
+networks:
+  modx-network:
+    driver: bridge
+
+volumes:
+  mysql_data: 
